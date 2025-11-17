@@ -13,7 +13,6 @@ import com.wbprofit.ui.main.impl.di.mainModule
 import org.koin.core.module.Module
 
 val appModules: List<Module> = listOf(
-
     // Features core
     networkFeatureModule,
     keystoreModule,
@@ -21,12 +20,10 @@ val appModules: List<Module> = listOf(
     analyticsFeatureModule,
     authFeatureModule,
     cardsFeatureModule,
-
     // UI
     cardDetailsModule,
     cardsModule,
     analyticsUiModule,
     mainModule,
     authUiModule,
-
 )

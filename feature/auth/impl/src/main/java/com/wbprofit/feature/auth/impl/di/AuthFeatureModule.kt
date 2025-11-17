@@ -1,8 +1,8 @@
 package com.wbprofit.feature.auth.impl.di
 
+import com.wbprofit.core.keystore.api.KeystoreFeature
 import com.wbprofit.core.network.api.NetworkFeature
 import com.wbprofit.core.network.api.create
-import com.wbprofit.core.keystore.api.KeystoreFeature
 import com.wbprofit.feature.auth.api.AuthFeature
 import com.wbprofit.feature.auth.impl.AuthFeatureImpl
 import com.wbprofit.feature.auth.impl.data.AuthRateLimiter

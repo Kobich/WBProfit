@@ -85,9 +85,9 @@ internal class CardsDtoMapper {
         is Boolean -> listOf(value.toString())
         else ->
             value
-            .toString()
-            .trim()
-            .takeIf { it.isNotEmpty() }
-            ?.let { listOf(it) } ?: emptyList()
+                .toString()
+                .trim()
+                .takeIf { it.isNotEmpty() }
+                ?.let { listOf(it) } ?: emptyList()
     }
 }

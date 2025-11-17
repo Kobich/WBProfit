@@ -2,8 +2,8 @@ package com.wbprofit.ui.cards.impl.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wbprofit.ui.cards.impl.domain.CardsInteractor
 import com.wbprofit.feature.auth.api.AuthFeature
+import com.wbprofit.ui.cards.impl.domain.CardsInteractor
 import com.wbprofit.ui.cards.impl.domain.entity.CardsScreenState
 import com.wbprofit.ui.cards.impl.ui.entity.CardViewState
 import com.wbprofit.ui.cards.impl.ui.entity.CardsScreenViewState
@@ -33,6 +33,7 @@ class CardsViewModel(
     fun refresh() {
         interactor.refresh()
     }
+
     fun logout() {
         viewModelScope.launch {
             authFeature.logout()

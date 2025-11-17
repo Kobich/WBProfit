@@ -10,7 +10,6 @@ internal class AnalyticsRepositoryImpl(
     private val analyticsApi: AnalyticsApi,
     private val saleDtoMapper: SaleDtoMapper,
 ) : AnalyticsRepository {
-
     override suspend fun getSales(params: SalesParams): List<SaleRecord> {
         val sales = analyticsApi.getSales(
             dateFrom = params.dateFrom.value,

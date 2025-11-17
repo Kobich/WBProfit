@@ -18,6 +18,10 @@ internal class AuthRepositoryImpl(
     private val secureStorage: KeystoreFeature,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AuthRepository {
+    companion object {
+        private const val HTTP_UNAUTHORIZED = 401
+        private const val HTTP_TOO_MANY_REQUESTS = 429
+    }
 
     override suspend fun verifyToken(apiKey: String): AuthVerificationResult = withContext(dispatcher) {
         val response = runCatching { api.verifyToken(apiKey) }
@@ -27,8 +31,8 @@ internal class AuthRepositoryImpl(
 
         when {
             response.isSuccessful -> handleSuccess(apiKey)
-            response.code() == 401 -> AuthVerificationResult.Unauthorized
-            response.code() == 429 -> handleRateLimited(response)
+            response.code() == HTTP_UNAUTHORIZED -> AuthVerificationResult.Unauthorized
+            response.code() == HTTP_TOO_MANY_REQUESTS -> handleRateLimited(response)
             else -> AuthVerificationResult.Error(statusCode = response.code())
         }
     }

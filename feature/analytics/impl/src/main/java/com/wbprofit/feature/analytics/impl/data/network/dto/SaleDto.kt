@@ -32,5 +32,5 @@ data class SaleDto(
     @param:Json(name = "saleID") val saleId: String,
     @param:Json(name = "sticker") val sticker: String,
     @param:Json(name = "gNumber") val gNumber: String,
-    @param:Json(name = "srid") val srid: String
+    @param:Json(name = "srid") val srid: String,
 )

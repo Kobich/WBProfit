@@ -10,8 +10,6 @@ internal class AnalyticsUiFeatureImpl : AnalyticsUiFeature {
     override fun Content(
         navController: NavHostController,
     ) {
-        AnalyticsScreen(
-            navController = navController,
-        )
+        AnalyticsScreen()
     }
 }

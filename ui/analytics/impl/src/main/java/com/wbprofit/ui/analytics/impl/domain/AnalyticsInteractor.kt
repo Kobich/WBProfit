@@ -4,15 +4,15 @@ import com.wbprofit.feature.analytics.api.AnalyticsFeature
 import com.wbprofit.feature.analytics.api.entity.AnalyticsDate
 import com.wbprofit.feature.analytics.api.entity.SalesParams
 import com.wbprofit.ui.analytics.impl.domain.entity.AnalyticsScreenState
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 internal class AnalyticsInteractor(
     private val analyticsFeature: AnalyticsFeature,

@@ -2,13 +2,11 @@ package com.wbprofit.ui.analytics.impl.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.navigation.NavHostController
 import com.wbprofit.ui.analytics.impl.ui.entity.AnalyticsCallbacks
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 internal fun AnalyticsScreen(
-    navController: NavHostController,
     vm: AnalyticsViewModel = koinViewModel(),
 ) {
     val uiState = vm.uiState.collectAsState()

@@ -31,7 +31,6 @@ internal fun MainScreen(
     cardDetailsUiFeature: CardDetailsUiFeature,
     analyticsUiFeature: AnalyticsUiFeature,
     onLogout: () -> Unit,
-
 ) {
     val navController = rememberNavController()
     val tabs = TabItem.items
