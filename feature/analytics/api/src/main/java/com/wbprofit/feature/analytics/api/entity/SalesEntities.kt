@@ -15,17 +15,7 @@ data class SalesParams(
  * Stored in ISO-8601 (yyyy-MM-dd) format required by WB API.
  */
 @JvmInline
-value class AnalyticsDate(val value: String) {
-    init {
-        require(value.matches(DATE_REGEX)) {
-            "Date must be in ISO yyyy-MM-dd format, but was: $value"
-        }
-    }
-
-    companion object {
-        private val DATE_REGEX = Regex("\\d{4}-\\d{2}-\\d{2}")
-    }
-}
+value class AnalyticsDate(val value: String)
 
 /**
  * Aggregated per-item sales metrics.

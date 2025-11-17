@@ -1,14 +1,20 @@
 package com.wbprofit.ui.analytics.impl.ui.entity
 
 internal sealed class AnalyticsScreenViewState {
-    data object Loading : AnalyticsScreenViewState()
+    data class Loading(
+        val date: String,
+    ) : AnalyticsScreenViewState()
 
     data class Content(
+        val date: String,
         val periodLabel: String,
         val items: List<AnalyticsItemViewState>,
     ) : AnalyticsScreenViewState()
 
-    data class Error(val message: String) : AnalyticsScreenViewState()
+    data class Error(
+        val date: String,
+        val message: String,
+    ) : AnalyticsScreenViewState()
 }
 
 internal data class AnalyticsItemViewState(

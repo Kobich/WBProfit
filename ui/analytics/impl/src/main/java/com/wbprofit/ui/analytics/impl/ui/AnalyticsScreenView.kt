@@ -34,19 +34,18 @@ import java.util.Locale
 @Composable
 internal fun AnalyticsScreenView(
     uiState: AnalyticsScreenViewState,
-    dateInput: String,
     dateError: String?,
     callbacks: AnalyticsCallbacks,
 ) {
     when (uiState) {
-        AnalyticsScreenViewState.Loading -> LoadingState(
-            dateInput = dateInput,
+        is AnalyticsScreenViewState.Loading -> LoadingState(
+            dateInput = uiState.date,
             dateError = dateError,
             callbacks = callbacks,
         )
         is AnalyticsScreenViewState.Error -> ErrorState(
             message = uiState.message,
-            dateInput = dateInput,
+            dateInput = uiState.date,
             dateError = dateError,
             onRetry = callbacks.onRefresh,
             onDateChanged = callbacks.onDateChanged,
@@ -54,7 +53,7 @@ internal fun AnalyticsScreenView(
         )
         is AnalyticsScreenViewState.Content -> AnalyticsContentView(
             state = uiState,
-            dateInput = dateInput,
+            dateInput = uiState.date,
             dateError = dateError,
             callbacks = callbacks,
         )
@@ -267,6 +266,7 @@ private fun Double.formatPercent(): String =
 private fun PreviewAnalyticsContent() {
     AnalyticsScreenView(
         uiState = AnalyticsScreenViewState.Content(
+            date = "2025-01-01",
             periodLabel = "2025-01-01",
             items = listOf(
                 AnalyticsItemViewState(
@@ -299,7 +299,6 @@ private fun PreviewAnalyticsContent() {
                 ),
             ),
         ),
-        dateInput = "2025-01-01",
         dateError = null,
         callbacks = AnalyticsCallbacks(
             onRefresh = {},
@@ -313,8 +312,7 @@ private fun PreviewAnalyticsContent() {
 @Composable
 private fun PreviewLoading() {
     AnalyticsScreenView(
-        uiState = AnalyticsScreenViewState.Loading,
-        dateInput = "",
+        uiState = AnalyticsScreenViewState.Loading(date = "2025-01-01"),
         dateError = null,
         callbacks = AnalyticsCallbacks(onRefresh = {}, onApplyDate = {}, onDateChanged = {}),
     )
@@ -324,8 +322,10 @@ private fun PreviewLoading() {
 @Composable
 private fun PreviewError() {
     AnalyticsScreenView(
-        uiState = AnalyticsScreenViewState.Error("Не удалось загрузить отчёт"),
-        dateInput = "2025-01-01",
+        uiState = AnalyticsScreenViewState.Error(
+            date = "2025-01-01",
+            "Не удалось загрузить отчёт",
+        ),
         dateError = "Используйте формат yyyy-MM-dd",
         callbacks = AnalyticsCallbacks(onRefresh = {}, onApplyDate = {}, onDateChanged = {}),
     )

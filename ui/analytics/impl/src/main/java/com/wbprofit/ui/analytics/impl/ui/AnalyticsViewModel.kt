@@ -3,34 +3,36 @@ package com.wbprofit.ui.analytics.impl.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wbprofit.feature.analytics.api.entity.AnalyticsDate
-import com.wbprofit.feature.analytics.api.entity.SalesItem
 import com.wbprofit.ui.analytics.impl.domain.AnalyticsInteractor
-import com.wbprofit.ui.analytics.impl.domain.entity.AnalyticsScreenState
-import com.wbprofit.ui.analytics.impl.ui.entity.AnalyticsItemViewState
 import com.wbprofit.ui.analytics.impl.ui.entity.AnalyticsScreenViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
 internal class AnalyticsViewModel(
     private val interactor: AnalyticsInteractor,
+    private val converter: AnalyticsViewStateConverter,
 ) : ViewModel() {
-    private val _dateInput = MutableStateFlow("")
-    val dateInput: StateFlow<String> = _dateInput.asStateFlow()
+    private val dateMutableStateFlow = MutableStateFlow("")
+    private val dateInput: StateFlow<String> = dateMutableStateFlow.asStateFlow()
+    private val dateRegex = Regex("\\d{4}-\\d{2}-\\d{2}")
 
     private val _dateError = MutableStateFlow<String?>(null)
     val dateError: StateFlow<String?> = _dateError.asStateFlow()
 
-    val uiState: StateFlow<AnalyticsScreenViewState> = interactor.state
-        .map(::mapToViewState)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = AnalyticsScreenViewState.Loading,
-        )
+    val uiState: StateFlow<AnalyticsScreenViewState> = combine(
+        interactor.state,
+        dateInput,
+    ) { state, date ->
+        converter.convert(state, date)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = AnalyticsScreenViewState.Loading(date = ""),
+    )
 
     init {
         interactor.init()
@@ -41,49 +43,24 @@ internal class AnalyticsViewModel(
     }
 
     fun onDateChanged(value: String) {
-        _dateInput.value = value
-        _dateError.value = null
-    }
+        val trimmed = value.trim()
+        val date = runCatching { if (trimmed.matches(dateRegex)) trimmed else null }
+            .getOrNull()
+            ?.let { AnalyticsDate(it) }
 
-    fun applyDateFilter() {
-        val trimmed = dateInput.value.trim()
-        val date = runCatching { AnalyticsDate(trimmed) }.getOrNull()
         if (date == null) {
             _dateError.value = DATE_ERROR_MESSAGE
         } else {
             _dateError.value = null
-            _dateInput.value = date.value
-            interactor.refreshForDate(date)
+            dateMutableStateFlow.value = date.value
         }
+        dateMutableStateFlow.value = value
+        _dateError.value = null
     }
 
-    private fun mapToViewState(state: AnalyticsScreenState): AnalyticsScreenViewState =
-        when (state) {
-            AnalyticsScreenState.Loading -> AnalyticsScreenViewState.Loading
-            is AnalyticsScreenState.Error -> AnalyticsScreenViewState.Error(state.message)
-            is AnalyticsScreenState.Success -> {
-                _dateInput.value = state.report.params.dateFrom.value
-                AnalyticsScreenViewState.Content(
-                    periodLabel = state.report.params.dateFrom.value,
-                    items = state.report.items.map(::mapItem),
-                )
-            }
-        }
-
-    private fun mapItem(item: SalesItem): AnalyticsItemViewState = AnalyticsItemViewState(
-        nmId = item.nmId,
-        supplierArticle = item.supplierArticle,
-        subject = item.subject,
-        brand = item.brand,
-        techSize = item.techSize,
-        soldCount = item.quantity,
-        returnCount = item.returns,
-        operationsCount = item.operations,
-        buyoutPercent = item.buyoutPercent,
-        grossRevenue = item.grossRevenue,
-        netRevenue = item.netRevenue,
-        payout = item.payout,
-    )
+    fun applyDateFilter() {
+        interactor.refreshForDate(AnalyticsDate(dateInput.value))
+    }
 
     private companion object {
         const val DATE_ERROR_MESSAGE = "Используйте формат yyyy-MM-dd"
