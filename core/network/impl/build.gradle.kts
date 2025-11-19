@@ -20,7 +20,11 @@ val wbTestApiBaseUrl =
 val wbApiKey = localProperties.getProperty("WB_API_KEY") ?: ""
 val wbApiBaseUrl =
     localProperties.getProperty("WB_API_BASE_URL") ?: "https://content-api.wildberries.ru/"
+val wbOrdersApiBaseUrl =
+    localProperties.getProperty("WB_ORDERS_API_BASE_URL") ?: "https://statistics-api.wildberries.ru/"
 
+val wbOrdersSandboxApiBaseUrl =
+    localProperties.getProperty("WB_ORDERS_API_SANDBOX_BASE_URL") ?: "https://statistics-api-sandbox.wildberries.ru/"
 android {
     namespace = "com.wbprofit.core.network.impl"
     compileSdk = 36
@@ -32,6 +36,8 @@ android {
         buildConfigField("String", "WB_TEST_API_BASE_URL", "\"$wbTestApiBaseUrl\"")
         buildConfigField("String", "WB_API_KEY", "\"$wbApiKey\"")
         buildConfigField("String", "WB_API_BASE_URL", "\"$wbApiBaseUrl\"")
+        buildConfigField("String", "WB_ORDERS_API_BASE_URL", "\"$wbOrdersApiBaseUrl\"")
+        buildConfigField("String", "WB_ORDERS_API_SANDBOX_BASE_URL", "\"$wbOrdersSandboxApiBaseUrl\"")
     }
 
     buildTypes {
@@ -85,3 +91,4 @@ dependencies {
     implementation(project(":core:keystore:api"))
 
 }
+

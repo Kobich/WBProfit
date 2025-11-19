@@ -68,6 +68,8 @@ dependencies {
     implementation(project(":core:keystore:api"))
     implementation(project(":core:keystore:impl"))
 
+    implementation(project(":feature:analytics:api"))
+    implementation(project(":feature:analytics:impl"))
     implementation(project(":feature:cards:impl"))
     implementation(project(":feature:cards:api"))
     implementation(project(":feature:auth:impl"))
@@ -79,6 +81,8 @@ dependencies {
     implementation(project(":ui:main:api"))
     implementation(project(":ui:card:api"))
     implementation(project(":ui:cards:api"))
+    implementation(project(":ui:analytics:impl"))
+    implementation(project(":ui:analytics:api"))
 
     implementation(project(":ui:auth:impl"))
     implementation(project(":ui:auth:api"))

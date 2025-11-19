@@ -1,13 +1,11 @@
-import java.io.File
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp")
 }
+
 android {
-    namespace = "com.wbprofit.core.secure.impl"
+    namespace = "com.wbprofit.feature.analytics.impl"
     compileSdk = 36
 
     defaultConfig {
@@ -16,20 +14,9 @@ android {
     }
 
     buildTypes {
-        debug {
+        release {
             isMinifyEnabled = false
         }
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 
     compileOptions {
@@ -42,17 +29,30 @@ android {
     }
 }
 
-
-
 dependencies {
-    implementation(project(":core:utils:secure:api"))
-    implementation(libs.androidx.core.ktx)
+    //Project
+    implementation(project(":feature:analytics:api"))
+    implementation(project(":core:network:api"))
+    implementation(project(":core:network:impl"))
+
+    //Net
+    implementation(libs.retrofit)
+    implementation(libs.logging.interceptor)
+
+    // Moshi
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.moshi.adapters)
+    implementation(libs.moshi.retrofit)
+    ksp(libs.moshi.kotlin.codegen)
+
     //DI
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    androidTestImplementation(libs.androidx.test.runner)
+    implementation(libs.kotlinx.coroutines.android)
+
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.test.runner)
 }

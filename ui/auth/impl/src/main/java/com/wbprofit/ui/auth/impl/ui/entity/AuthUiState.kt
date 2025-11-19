@@ -11,8 +11,11 @@ internal data class AuthUiState(
 
 internal sealed interface AuthStatus {
     data object Idle : AuthStatus
+
     data object Success : AuthStatus
+
     data class Error(val message: String) : AuthStatus
+
     data class RateLimited(val retryAfterMillis: Long?) : AuthStatus
 }
 

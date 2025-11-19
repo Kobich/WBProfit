@@ -12,11 +12,14 @@ import kotlin.reflect.KClass
 internal class NetworkFeatureImpl(
     private val okHttpHolder: OkHttpHolder,
     private val moshiHolder: MoshiHolder,
-    private val baseUrl: String,
+    private val defaultBaseUrl: String,
 ) : NetworkFeature {
-    override fun <T : Any> createApi(apiClass: KClass<T>): T = createService(
+    override fun <T : Any> createApi(
+        apiClass: KClass<T>,
+        baseUrl: String?,
+    ): T = createService(
         apiClass = apiClass,
-        url = baseUrl,
+        url = baseUrl ?: defaultBaseUrl,
         client = okHttpHolder.client,
         converterFactory = MoshiConverterFactory.create(moshiHolder.moshi),
     )

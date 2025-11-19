@@ -12,7 +12,6 @@ internal class KeystoreRepositoryImpl(
     private val preferences: SharedPreferences,
     private val encryptionEngine: EncryptionEngine,
 ) : KeystoreRepository {
-
     override fun save(key: String, value: String): Boolean = runCatching {
         val payload = encryptionEngine.encrypt(value.toByteArray(Charsets.UTF_8))
         preferences.edit { putString(key, payload.encode()) }
@@ -21,22 +20,29 @@ internal class KeystoreRepositoryImpl(
     }.isSuccess
 
     override fun read(key: String): String? {
-        if (!preferences.contains(key)) return null
-        val serializedPayload = preferences.getString(key, null) ?: return null
-
-        val payload = EncryptedPayload.decode(serializedPayload) ?: run {
-            Log.w(TAG, "Encrypted payload is corrupted for key: $key, removing entry")
-            preferences.edit { remove(key) }
+        if (!preferences.contains(key)) {
             return null
         }
 
-        return runCatching {
-            val decryptedBytes = encryptionEngine.decrypt(payload)
-            String(decryptedBytes, Charsets.UTF_8)
-        }.onFailure { throwable ->
-            Log.e(TAG, "Failed to decrypt secure value for key: $key", throwable)
-            preferences.edit { remove(key) }
-        }.getOrNull()
+        val serializedPayload = preferences.getString(key, null)
+        val payload = serializedPayload?.let { EncryptedPayload.decode(it) }
+
+        return when {
+            payload == null -> {
+                if (serializedPayload != null) {
+                    Log.w(TAG, "Encrypted payload is corrupted for key: $key, removing entry")
+                    preferences.edit { remove(key) }
+                }
+                null
+            }
+            else -> runCatching {
+                val decryptedBytes = encryptionEngine.decrypt(payload)
+                String(decryptedBytes, Charsets.UTF_8)
+            }.onFailure { throwable ->
+                Log.e(TAG, "Failed to decrypt secure value for key: $key", throwable)
+                preferences.edit { remove(key) }
+            }.getOrNull()
+        }
     }
 
     override fun remove(key: String): Boolean = runCatching {

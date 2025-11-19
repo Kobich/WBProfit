@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":ui:main:api"))
     implementation(project(":ui:card:api"))
     implementation(project(":ui:cards:api"))
+    implementation(project(":ui:analytics:api"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

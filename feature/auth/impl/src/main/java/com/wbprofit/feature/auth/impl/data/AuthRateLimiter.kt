@@ -41,5 +41,6 @@ internal class AuthRateLimiter(
 
 internal sealed interface RateLimiterResult {
     data class Denied(val retryAfterMillis: Long) : RateLimiterResult
+
     data object Allowed : RateLimiterResult
 }

@@ -89,23 +89,23 @@ fun CardsContentView(
             .statusBarsPadding(),
     ) { innerPadding ->
         Column {
-        Image(
-            painter = painterResource(id = R.drawable.logout_ic),
-            contentDescription = "Logout",
-            modifier = Modifier
-                .padding(innerPadding)
-                .size(36.dp)
-                .clickable { callbacks.onLogoutClick() },
-        )
-        CardsCatalogList(
-            items = cards,
-            onClick = callbacks.onClick,
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-        )
+            Image(
+                painter = painterResource(id = R.drawable.logout_ic),
+                contentDescription = "Logout",
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .size(36.dp)
+                    .clickable { callbacks.onLogoutClick() },
+            )
+            CardsCatalogList(
+                items = cards,
+                onClick = callbacks.onClick,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+            )
+        }
     }
-}
 }
 
 @Composable

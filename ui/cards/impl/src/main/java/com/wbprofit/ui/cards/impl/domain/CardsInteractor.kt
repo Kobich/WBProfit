@@ -1,9 +1,9 @@
 package com.wbprofit.ui.cards.impl.domain
 
+import com.wbprofit.feature.auth.api.AuthFeature
 import com.wbprofit.feature.cards.api.CardsFeature
 import com.wbprofit.ui.cards.impl.domain.entity.CardsScreenState
 import com.wbprofit.ui.cards.impl.domain.entity.CardsState
-import com.wbprofit.feature.auth.api.AuthFeature
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,7 +26,6 @@ class CardsInteractor(
     fun init() {
         refresh()
     }
-
 
     fun refresh() {
         job?.cancel()

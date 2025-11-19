@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.wbprofit.ui.analytics.api.AnalyticsUiFeature
 import com.wbprofit.ui.card.api.CardDetailsUiFeature
 import com.wbprofit.ui.cards.api.CardsUiFeature
 import com.wbprofit.ui.main.impl.ui.entity.TabItem
@@ -28,6 +29,7 @@ import com.wbprofit.ui.main.impl.ui.entity.TabItem
 internal fun MainScreen(
     cardsUiFeature: CardsUiFeature,
     cardDetailsUiFeature: CardDetailsUiFeature,
+    analyticsUiFeature: AnalyticsUiFeature,
     onLogout: () -> Unit,
 ) {
     val navController = rememberNavController()
@@ -81,7 +83,7 @@ internal fun MainScreen(
                 cardsUiFeature.Content(navController, onLogout)
             }
             composable(TabItem.Analytics.route) {
-                cardsUiFeature.Content(navController, onLogout)
+                analyticsUiFeature.Content(navController)
             }
             composable(
                 route = "card/{nmId}",

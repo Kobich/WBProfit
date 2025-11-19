@@ -4,14 +4,21 @@
 /.idea/
 /.kotlin/
 
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
 # Gradle
 .gradle/
 /local.properties
 
 # Build outputs
-/build/
-/app/build/
-/captures/
+build/
+
+# Android Studio captures folder
+captures/
 
 # Native builds
 .externalNativeBuild/
@@ -32,6 +39,3 @@ Thumbs.db
 
 # Kotlin/Java
 /out/
-
-# Keep Gradle wrapper
-!gradle/wrapper/gradle-wrapper.jar

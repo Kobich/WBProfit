@@ -9,6 +9,7 @@ val mainModule = module {
         MainUiFeatureImpl(
             cardsUiFeature = get(),
             cardDetailsUiFeature = get(),
+            analyticsUiFeature = get(),
         )
     }
 }

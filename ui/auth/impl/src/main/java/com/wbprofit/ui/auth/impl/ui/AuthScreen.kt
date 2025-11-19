@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,8 +35,10 @@ import com.wbprofit.ui.auth.impl.ui.entity.AuthCallbacks
 import com.wbprofit.ui.auth.impl.ui.entity.AuthStatus
 import com.wbprofit.ui.auth.impl.ui.entity.AuthUiState
 import com.wbprofit.ui.main.api.MainNavRoute
-import java.util.concurrent.TimeUnit
 import org.koin.androidx.compose.koinViewModel
+import java.util.concurrent.TimeUnit
+
+private const val DEFAULT_RETRY_AFTER_SECONDS = 30L
 
 @Composable
 internal fun AuthScreen(
@@ -97,7 +99,8 @@ internal fun AuthScreenView(
                 style = MaterialTheme.typography.headlineSmall,
             )
             Text(
-                text = "Мы используем ключ, чтобы делать запросы к вашему аккаунту. Вы всегда можете изменить его позже.",
+                text = "Мы используем ключ, чтобы делать запросы к вашему аккаунту. " +
+                    "Вы всегда можете изменить его позже.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
             )
@@ -149,7 +152,7 @@ private fun StatusMessage(
         is AuthStatus.RateLimited -> {
             val seconds = status.retryAfterMillis?.let { millis ->
                 TimeUnit.MILLISECONDS.toSeconds(millis.coerceAtLeast(0L)) + 1
-            } ?: 30L
+            } ?: DEFAULT_RETRY_AFTER_SECONDS
             "Слишком много попыток. Попробуйте через $seconds секунд."
         }
     }
