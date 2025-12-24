@@ -44,8 +44,10 @@ dependencies {
     implementation(libs.koin.androidx.compose)
 
     //Navigation
-    implementation(libs.androidx.navigation.runtime.android)
-    implementation(libs.androidx.navigation.compose)
+    //implementation(libs.androidx.navigation.runtime.android)
+    //implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
 
     //Compose
     implementation(libs.androidx.core.ktx)
@@ -65,4 +67,6 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.timber)
+
+
 }

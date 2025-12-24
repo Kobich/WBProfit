@@ -9,20 +9,20 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import com.wbprofit.ui.analytics.api.AnalyticsUiFeature
 import com.wbprofit.ui.card.api.CardDetailsUiFeature
 import com.wbprofit.ui.cards.api.CardsUiFeature
+import com.wbprofit.ui.main.impl.navigation.AnalyticsNavRoute
+import com.wbprofit.ui.main.impl.navigation.CardDetailsNavRoute
+import com.wbprofit.ui.main.impl.navigation.CatalogNavRoute
 import com.wbprofit.ui.main.impl.ui.entity.TabItem
 
 @Composable
@@ -32,28 +32,24 @@ internal fun MainScreen(
     analyticsUiFeature: AnalyticsUiFeature,
     onLogout: () -> Unit,
 ) {
-    val navController = rememberNavController()
     val tabs = TabItem.items
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
-    val previousRoute = navController.previousBackStackEntry?.destination?.route
+    val navStack = rememberNavBackStack(CatalogNavRoute)
+    val selectedTab = when (navStack.lastOrNull()) {
+        AnalyticsNavRoute -> TabItem.Analytics
+        else -> TabItem.Catalog
+    }
 
     Scaffold(
         bottomBar = {
             NavigationBar {
                 tabs.forEach { tab ->
-                    val isSelected = currentRoute == tab.route ||
-                        (currentRoute?.startsWith("card/") == true && previousRoute == tab.route)
+                    val isSelected = selectedTab == tab
                     NavigationBarItem(
                         selected = isSelected,
                         onClick = {
-                            if (currentRoute == tab.route) return@NavigationBarItem
-                            navController.navigate(tab.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
+                            when (tab) {
+                                TabItem.Catalog -> navStack.setRoot(CatalogNavRoute)
+                                TabItem.Analytics -> navStack.setRoot(AnalyticsNavRoute)
                             }
                         },
                         icon = {
@@ -72,26 +68,55 @@ internal fun MainScreen(
             }
         },
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = TabItem.Catalog.route,
+        NavDisplay(
+            backStack = navStack,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-        ) {
-            composable(TabItem.Catalog.route) {
-                cardsUiFeature.Content(navController, onLogout)
-            }
-            composable(TabItem.Analytics.route) {
-                analyticsUiFeature.Content(navController)
-            }
-            composable(
-                route = "card/{nmId}",
-                arguments = listOf(navArgument("nmId") { type = NavType.LongType }),
-            ) { backStackEntry ->
-                val nmId = backStackEntry.arguments?.getLong("nmId") ?: return@composable
-                cardDetailsUiFeature.Content(navController, nmId)
-            }
-        }
+            onBack = {
+                if (navStack.size > 1) {
+                    navStack.removeLastOrNull()
+                }
+            },
+            entryProvider = { route ->
+                when (route) {
+                    CatalogNavRoute -> NavEntry(route) {
+                        cardsUiFeature.Content(
+                            onCardClick = { nmId ->
+                                navStack.add(CardDetailsNavRoute(nmId))
+                            },
+                            onLogout = onLogout,
+                        )
+                    }
+
+                    AnalyticsNavRoute -> NavEntry(route) {
+                        analyticsUiFeature.Content()
+                    }
+
+                    is CardDetailsNavRoute -> NavEntry(route) {
+                        cardDetailsUiFeature.Content(
+                            nmId = route.nmId,
+                            onBackClick = {
+                                navStack.removeLastOrNull()
+                            },
+                        )
+                    }
+
+                    else -> error("Unknown route: $route")
+                }
+            },
+        )
+    }
+}
+
+private fun NavBackStack<NavKey>.setRoot(route: NavKey) {
+    if (isEmpty()) {
+        add(route)
+        return
+    }
+
+    this[0] = route
+    if (size > 1) {
+        subList(1, size).clear()
     }
 }

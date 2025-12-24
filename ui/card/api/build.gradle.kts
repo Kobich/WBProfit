@@ -33,7 +33,8 @@ kotlin {
 
 dependencies {
 
-
-    implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    //implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.compose.runtime)
 }

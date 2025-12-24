@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.wbprofit.base.ui.R
 import com.wbprofit.ui.card.impl.ui.entity.CardDetailsCallbacks
@@ -45,15 +44,13 @@ const val CARD_SIZE = 3f / 4f
 
 @Composable
 internal fun CardDetailsScreen(
-    navController: NavHostController,
     nmId: Long,
+    onBackClick: () -> Unit,
     vm: CardDetailsViewModel = koinViewModel(parameters = { parametersOf(nmId) }),
 ) {
     val uiState by vm.uiState.collectAsState()
 
-    val callbacks = CardDetailsCallbacks(
-        onBackClick = { navController.popBackStack() },
-    )
+    val callbacks = CardDetailsCallbacks(onBackClick = onBackClick)
 
     CardDetailsScreenView(
         uiState = uiState,
