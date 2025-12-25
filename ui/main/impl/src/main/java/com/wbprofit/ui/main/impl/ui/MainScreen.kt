@@ -9,6 +9,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -33,10 +38,13 @@ internal fun MainScreen(
     onLogout: () -> Unit,
 ) {
     val tabs = TabItem.items
-    val navStack = rememberNavBackStack(CatalogNavRoute)
-    val selectedTab = when (navStack.lastOrNull()) {
-        AnalyticsNavRoute -> TabItem.Analytics
-        else -> TabItem.Catalog
+    var selectedTab: TabItem by remember { mutableStateOf(TabItem.Catalog) }
+    val catalogBackStack = rememberNavBackStack(CatalogNavRoute)
+    val analyticsBackStack = rememberNavBackStack(AnalyticsNavRoute)
+    val saveableStateHolder = rememberSaveableStateHolder()
+    val currentBackStack = when (selectedTab) {
+        TabItem.Catalog -> catalogBackStack
+        TabItem.Analytics -> analyticsBackStack
     }
 
     Scaffold(
@@ -47,9 +55,13 @@ internal fun MainScreen(
                     NavigationBarItem(
                         selected = isSelected,
                         onClick = {
-                            when (tab) {
-                                TabItem.Catalog -> navStack.setRoot(CatalogNavRoute)
-                                TabItem.Analytics -> navStack.setRoot(AnalyticsNavRoute)
+                            if (selectedTab == tab) {
+                                when (tab) {
+                                    TabItem.Catalog -> catalogBackStack.setRoot(CatalogNavRoute)
+                                    TabItem.Analytics -> analyticsBackStack.setRoot(AnalyticsNavRoute)
+                                }
+                            } else {
+                                selectedTab = tab
                             }
                         },
                         icon = {
@@ -69,35 +81,39 @@ internal fun MainScreen(
         },
     ) { innerPadding ->
         NavDisplay(
-            backStack = navStack,
+            backStack = currentBackStack,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             onBack = {
-                if (navStack.size > 1) {
-                    navStack.removeLastOrNull()
+                if (currentBackStack.size > 1) {
+                    currentBackStack.removeLastOrNull()
                 }
             },
             entryProvider = { route ->
                 when (route) {
                     CatalogNavRoute -> NavEntry(route) {
-                        cardsUiFeature.Content(
-                            onCardClick = { nmId ->
-                                navStack.add(CardDetailsNavRoute(nmId))
-                            },
-                            onLogout = onLogout,
-                        )
+                        saveableStateHolder.SaveableStateProvider(TabItem.Catalog.route) {
+                            cardsUiFeature.Content(
+                                onCardClick = { nmId ->
+                                    catalogBackStack.add(CardDetailsNavRoute(nmId))
+                                },
+                                onLogout = onLogout,
+                            )
+                        }
                     }
 
                     AnalyticsNavRoute -> NavEntry(route) {
-                        analyticsUiFeature.Content()
+                        saveableStateHolder.SaveableStateProvider(TabItem.Analytics.route) {
+                            analyticsUiFeature.Content()
+                        }
                     }
 
                     is CardDetailsNavRoute -> NavEntry(route) {
                         cardDetailsUiFeature.Content(
                             nmId = route.nmId,
                             onBackClick = {
-                                navStack.removeLastOrNull()
+                                catalogBackStack.removeLastOrNull()
                             },
                         )
                     }
