@@ -2,7 +2,6 @@ package com.wbprofit.ui.auth.api
 
 import androidx.compose.runtime.Composable
 
-
 interface AuthUiFeature {
     /**
      * Renders the auth flow.

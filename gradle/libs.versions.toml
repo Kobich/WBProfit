@@ -15,6 +15,7 @@ loggingInterceptor = "5.2.1"
 moshi = "1.15.2"
 navigation3Runtime = "1.0.0"
 navigation3Ui = "1.0.0"
+lifecycleViewmodelNav3 = "2.10.0"
 #navigationCompose = "2.9.5"
 koin = "4.1.1"
 koinCompose = "4.1.1"
@@ -35,6 +36,7 @@ navigationRuntimeKtxVersion = "2.9.6"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 #androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3Ui" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
