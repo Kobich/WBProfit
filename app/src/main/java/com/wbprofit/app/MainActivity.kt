@@ -6,11 +6,14 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.arttttt.nav3router.Nav3Host
+import com.arttttt.nav3router.Router
+import com.arttttt.nav3router.rememberNav3Navigator
+import com.wbprofit.di.RootRouterQualifier
 import com.wbprofit.base.ui.theme.MovieCatalogTheme
 import com.wbprofit.core.keystore.api.KeystoreFeature
 import com.wbprofit.core.keystore.api.SecureStorageKeys
@@ -24,6 +27,7 @@ class MainActivity : ComponentActivity() {
     private val mainUiFeature by inject<MainUiFeature>()
     private val authUiFeature by inject<AuthUiFeature>()
     private val secureStorage by inject<KeystoreFeature>()
+    private val rootRouter by inject<Router<NavKey>>(qualifier = RootRouterQualifier)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +45,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = startDestination,
                     authUiFeature = authUiFeature,
                     mainUiFeature = mainUiFeature,
+                    router = rootRouter,
                 )
             }
         }
@@ -52,51 +57,45 @@ private fun MainNavHost(
     startDestination: NavKey,
     authUiFeature: AuthUiFeature,
     mainUiFeature: MainUiFeature,
+    router: Router<NavKey>,
 ) {
     val backStack = rememberNavBackStack(startDestination)
     val activity = LocalActivity.current
-
-    NavDisplay(
+    val navigator = rememberNav3Navigator(
         backStack = backStack,
         onBack = {
-            if (backStack.size > 1) {
-                backStack.removeLastOrNull()
-            } else {
-                activity?.finish()
-            }
-        },
-        entryProvider = { route ->
-            when (route) {
-                AuthNavRoute -> NavEntry(route) {
-                    authUiFeature.Content(
-                        onAuthSuccess = {
-                            backStack.setRoot(MainNavRoute)
-                        },
-                    )
-                }
-
-                MainNavRoute -> NavEntry(route) {
-                    mainUiFeature.Content(
-                        onLogout = {
-                            backStack.setRoot(AuthNavRoute)
-                        },
-                    )
-                }
-
-                else -> error("Unknown route: $route")
-            }
+            activity?.finish()
         },
     )
-}
+    Nav3Host(
+        backStack = backStack,
+        router = router,
+        navigator = navigator,
+    ) { stack, onBack, navRouter ->
+        NavDisplay(
+            backStack = stack,
+            onBack = onBack,
+            entryProvider = { route ->
+                when (route) {
+                    AuthNavRoute -> NavEntry(route) {
+                        authUiFeature.Content(
+                            onAuthSuccess = {
+                                navRouter.replaceStack(MainNavRoute)
+                            },
+                        )
+                    }
 
-private fun NavBackStack<NavKey>.setRoot(route: NavKey) {
-    if (isEmpty()) {
-        add(route)
-        return
-    }
+                    MainNavRoute -> NavEntry(route) {
+                        mainUiFeature.Content(
+                            onLogout = {
+                                navRouter.replaceStack(AuthNavRoute)
+                            },
+                        )
+                    }
 
-    this[0] = route
-    if (size > 1) {
-        subList(1, size).clear()
+                    else -> error("Unknown route: $route")
+                }
+            },
+        )
     }
 }

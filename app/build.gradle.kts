@@ -131,5 +131,6 @@ dependencies {
 
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation("io.github.arttttt.nav3router:nav3router:1.0.3")
 
 }

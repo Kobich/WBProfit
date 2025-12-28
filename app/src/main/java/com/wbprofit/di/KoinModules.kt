@@ -26,4 +26,6 @@ val appModules: List<Module> = listOf(
     analyticsUiModule,
     mainModule,
     authUiModule,
+    // App scoped
+    appNavigationModule,
 )

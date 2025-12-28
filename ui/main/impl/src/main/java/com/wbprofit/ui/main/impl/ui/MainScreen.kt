@@ -1,5 +1,6 @@
 package com.wbprofit.ui.main.impl.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,17 +19,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.arttttt.nav3router.Nav3Host
+import com.arttttt.nav3router.Router
 import com.wbprofit.ui.analytics.api.AnalyticsUiFeature
 import com.wbprofit.ui.card.api.CardDetailsUiFeature
 import com.wbprofit.ui.cards.api.CardsUiFeature
 import com.wbprofit.ui.main.impl.navigation.AnalyticsNavRoute
 import com.wbprofit.ui.main.impl.navigation.CardDetailsNavRoute
 import com.wbprofit.ui.main.impl.navigation.CatalogNavRoute
+import com.wbprofit.ui.main.impl.navigation.MainScreenRoute
 import com.wbprofit.ui.main.impl.ui.entity.TabItem
 
 @Composable
@@ -36,6 +38,7 @@ internal fun MainScreen(
     cardsUiFeature: CardsUiFeature,
     cardDetailsUiFeature: CardDetailsUiFeature,
     analyticsUiFeature: AnalyticsUiFeature,
+    router: Router<MainScreenRoute>,
     onLogout: () -> Unit,
 ) {
     val tabs = TabItem.items
@@ -48,6 +51,11 @@ internal fun MainScreen(
         TabItem.Analytics -> analyticsBackStack
     }
 
+    val canNavigateUp = currentBackStack.size > 1
+
+    BackHandler(enabled = canNavigateUp) {
+        router.pop()
+    }
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -58,8 +66,8 @@ internal fun MainScreen(
                         onClick = {
                             if (selectedTab == tab) {
                                 when (tab) {
-                                    TabItem.Catalog -> catalogBackStack.setRoot(CatalogNavRoute)
-                                    TabItem.Analytics -> analyticsBackStack.setRoot(AnalyticsNavRoute)
+                                    TabItem.Catalog -> router.replaceStack(CatalogNavRoute)
+                                    TabItem.Analytics -> router.replaceStack(AnalyticsNavRoute)
                                 }
                             } else {
                                 selectedTab = tab
@@ -81,62 +89,49 @@ internal fun MainScreen(
             }
         },
     ) { innerPadding ->
-        NavDisplay(
+        Nav3Host(
             backStack = currentBackStack,
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            onBack = {
-                if (currentBackStack.size > 1) {
-                    currentBackStack.removeLastOrNull()
-                }
-            },
-            entryDecorators = listOf(
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            entryProvider = { route ->
-                when (route) {
-                    CatalogNavRoute -> NavEntry(route) {
-                        saveableStateHolder.SaveableStateProvider(TabItem.Catalog.route) {
-                            cardsUiFeature.Content(
-                                onCardClick = { nmId ->
-                                    catalogBackStack.add(CardDetailsNavRoute(nmId))
-                                },
-                                onLogout = onLogout,
+            router = router,
+        ) { backStack, onBack, navRouter ->
+            NavDisplay(
+                backStack = backStack,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                onBack = onBack,
+                entryDecorators = listOf(
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+                entryProvider = { route ->
+                    when (route) {
+                        CatalogNavRoute -> NavEntry(route) {
+                            saveableStateHolder.SaveableStateProvider(TabItem.Catalog.route) {
+                                cardsUiFeature.Content(
+                                    onCardClick = { nmId ->
+                                        navRouter.push(CardDetailsNavRoute(nmId))
+                                    },
+                                    onLogout = onLogout,
+                                )
+                            }
+                        }
+
+                        AnalyticsNavRoute -> NavEntry(route) {
+                            saveableStateHolder.SaveableStateProvider(TabItem.Analytics.route) {
+                                analyticsUiFeature.Content()
+                            }
+                        }
+
+                        is CardDetailsNavRoute -> NavEntry(route) {
+                            cardDetailsUiFeature.Content(
+                                nmId = route.nmId,
+                                onBackClick = navRouter::pop,
                             )
                         }
+
+                        else -> error("Unknown route: $route")
                     }
-
-                    AnalyticsNavRoute -> NavEntry(route) {
-                        saveableStateHolder.SaveableStateProvider(TabItem.Analytics.route) {
-                            analyticsUiFeature.Content()
-                        }
-                    }
-
-                    is CardDetailsNavRoute -> NavEntry(route) {
-                        cardDetailsUiFeature.Content(
-                            nmId = route.nmId,
-                            onBackClick = {
-                                catalogBackStack.removeLastOrNull()
-                            },
-                        )
-                    }
-
-                    else -> error("Unknown route: $route")
-                }
-            },
-        )
-    }
-}
-
-private fun NavBackStack<NavKey>.setRoot(route: NavKey) {
-    if (isEmpty()) {
-        add(route)
-        return
-    }
-
-    this[0] = route
-    if (size > 1) {
-        subList(1, size).clear()
+                },
+            )
+        }
     }
 }

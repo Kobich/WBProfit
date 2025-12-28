@@ -4,10 +4,13 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal object CatalogNavRoute : NavKey
+internal sealed interface MainScreenRoute : NavKey
 
 @Serializable
-internal object AnalyticsNavRoute : NavKey
+internal object CatalogNavRoute : MainScreenRoute
 
 @Serializable
-internal data class CardDetailsNavRoute(val nmId: Long) : NavKey
+internal object AnalyticsNavRoute : MainScreenRoute
+
+@Serializable
+internal data class CardDetailsNavRoute(val nmId: Long) : MainScreenRoute
