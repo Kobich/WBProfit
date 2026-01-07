@@ -1,5 +1,6 @@
 package com.wbprofit.ui.main.impl.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,19 +11,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import com.arttttt.nav3router.Nav3Host
+import com.arttttt.nav3router.Router
 import com.wbprofit.ui.analytics.api.AnalyticsUiFeature
 import com.wbprofit.ui.card.api.CardDetailsUiFeature
 import com.wbprofit.ui.cards.api.CardsUiFeature
+import com.wbprofit.ui.main.impl.navigation.AnalyticsNavRoute
+import com.wbprofit.ui.main.impl.navigation.CardDetailsNavRoute
+import com.wbprofit.ui.main.impl.navigation.CatalogNavRoute
+import com.wbprofit.ui.main.impl.navigation.MainScreenRoute
 import com.wbprofit.ui.main.impl.ui.entity.TabItem
 
 @Composable
@@ -30,30 +38,39 @@ internal fun MainScreen(
     cardsUiFeature: CardsUiFeature,
     cardDetailsUiFeature: CardDetailsUiFeature,
     analyticsUiFeature: AnalyticsUiFeature,
+    router: Router<MainScreenRoute>,
     onLogout: () -> Unit,
 ) {
-    val navController = rememberNavController()
     val tabs = TabItem.items
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
-    val previousRoute = navController.previousBackStackEntry?.destination?.route
+    var selectedTab: TabItem by remember { mutableStateOf(TabItem.Catalog) }
+    val catalogBackStack = rememberNavBackStack(CatalogNavRoute)
+    val analyticsBackStack = rememberNavBackStack(AnalyticsNavRoute)
+    val saveableStateHolder = rememberSaveableStateHolder()
+    val currentBackStack = when (selectedTab) {
+        TabItem.Catalog -> catalogBackStack
+        TabItem.Analytics -> analyticsBackStack
+    }
 
+    val canNavigateUp = currentBackStack.size > 1
+
+    BackHandler(enabled = canNavigateUp) {
+        router.pop()
+    }
     Scaffold(
         bottomBar = {
             NavigationBar {
                 tabs.forEach { tab ->
-                    val isSelected = currentRoute == tab.route ||
-                        (currentRoute?.startsWith("card/") == true && previousRoute == tab.route)
+                    val isSelected = selectedTab == tab
                     NavigationBarItem(
                         selected = isSelected,
                         onClick = {
-                            if (currentRoute == tab.route) return@NavigationBarItem
-                            navController.navigate(tab.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (selectedTab == tab) {
+                                when (tab) {
+                                    TabItem.Catalog -> router.replaceStack(CatalogNavRoute)
+                                    TabItem.Analytics -> router.replaceStack(AnalyticsNavRoute)
                                 }
+                            } else {
+                                selectedTab = tab
                             }
                         },
                         icon = {
@@ -72,26 +89,49 @@ internal fun MainScreen(
             }
         },
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = TabItem.Catalog.route,
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-        ) {
-            composable(TabItem.Catalog.route) {
-                cardsUiFeature.Content(navController, onLogout)
-            }
-            composable(TabItem.Analytics.route) {
-                analyticsUiFeature.Content(navController)
-            }
-            composable(
-                route = "card/{nmId}",
-                arguments = listOf(navArgument("nmId") { type = NavType.LongType }),
-            ) { backStackEntry ->
-                val nmId = backStackEntry.arguments?.getLong("nmId") ?: return@composable
-                cardDetailsUiFeature.Content(navController, nmId)
-            }
+        Nav3Host(
+            backStack = currentBackStack,
+            router = router,
+        ) { backStack, onBack, navRouter ->
+            NavDisplay(
+                backStack = backStack,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                onBack = onBack,
+                entryDecorators = listOf(
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+                entryProvider = { route ->
+                    when (route) {
+                        CatalogNavRoute -> NavEntry(route) {
+                            saveableStateHolder.SaveableStateProvider(TabItem.Catalog.route) {
+                                cardsUiFeature.Content(
+                                    onCardClick = { nmId ->
+                                        navRouter.push(CardDetailsNavRoute(nmId))
+                                    },
+                                    onLogout = onLogout,
+                                )
+                            }
+                        }
+
+                        AnalyticsNavRoute -> NavEntry(route) {
+                            saveableStateHolder.SaveableStateProvider(TabItem.Analytics.route) {
+                                analyticsUiFeature.Content()
+                            }
+                        }
+
+                        is CardDetailsNavRoute -> NavEntry(route) {
+                            cardDetailsUiFeature.Content(
+                                nmId = route.nmId,
+                                onBackClick = navRouter::pop,
+                            )
+                        }
+
+                        else -> error("Unknown route: $route")
+                    }
+                },
+            )
         }
     }
 }

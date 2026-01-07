@@ -1,5 +1,7 @@
 package com.wbprofit.ui.main.api
 
-object MainNavRoute {
-    const val MAIN = "main"
-}
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
+
+@Serializable
+object MainNavRoute : NavKey

@@ -29,12 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.wbprofit.ui.auth.api.AuthNavRoute
 import com.wbprofit.ui.auth.impl.ui.entity.AuthCallbacks
 import com.wbprofit.ui.auth.impl.ui.entity.AuthStatus
 import com.wbprofit.ui.auth.impl.ui.entity.AuthUiState
-import com.wbprofit.ui.main.api.MainNavRoute
 import org.koin.androidx.compose.koinViewModel
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +39,7 @@ private const val DEFAULT_RETRY_AFTER_SECONDS = 30L
 
 @Composable
 internal fun AuthScreen(
-    navController: NavHostController,
+    onAuthSuccess: () -> Unit,
     viewModel: AuthViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -54,9 +51,7 @@ internal fun AuthScreen(
 
     LaunchedEffect(uiState.status) {
         if (uiState.status == AuthStatus.Success) {
-            navController.navigate(MainNavRoute.MAIN) {
-                popUpTo(AuthNavRoute.AUTH) { inclusive = true }
-            }
+            onAuthSuccess()
         }
     }
 
